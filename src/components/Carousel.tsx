@@ -1,80 +1,63 @@
-import React, { useState } from "react";
-import Card from "./Card";
-import {initalState} from "./data";
+import {motion} from 'framer-motion'
+import {useRef, useEffect, useState, ReactElement} from 'react'
 
-function Carousel() {
+type  Props = {
+  children: ReactElement[]| ReactElement | string | number;
 
-  const [cards, setCards] = useState(initalState);
+}
 
-  const handleLeftClick = (isLeft) => {
-    const prevState = [...cards];
-    // find next inactive card index - top
-    const nextCardIdx = prevState
-      .filter((ft) => ft.active === true)
-      .sort((a, b) => (a.pos > b.pos ? 1 : b.pos > a.pos ? -1 : 0))[0].idx;
-    // reset
-    prevState.find((f) => f.active === false).active = true;
-    // update
-    prevState.find((f) => f.idx === nextCardIdx).active = false;
-    // maximize pos
-    prevState.find((f) => f.idx === nextCardIdx).pos =
-      Math.max.apply(
-        null,
-        prevState.map(function (o) {
-          return o.pos;
-        })
-      ) + 1;
 
-    // update state
-    setCards(prevState);
-  };
+const Carousel= (props:Props) => {
 
-  const handleRightClick = () => {
-    const prevState = [...cards];
-    // find next inactive card index - bottom
-    const nextCardIdx = prevState
-      .filter((ft) => ft.active === true)
-      .sort((a, b) => (a.pos > b.pos ? 1 : b.pos > a.pos ? -1 : 0))
-      .pop(1).idx;
-    // minimize pos
-    prevState.find((f) => f.active === false).pos =
-      Math.min.apply(
-        null,
-        prevState.map(function (o) {
-          return o.pos;
-        })
-      ) - 1;
-    // reset
-    prevState.find((f) => f.active === false).active = true;
-    // update
-    prevState.find((f) => f.idx === nextCardIdx).active = false;
+  const [ width, setwidth] = useState<number>(0)
+  const carousel = useRef<any>()
+  const next = useRef<any>()
+  const [itemsCount, setItemsCount] = useState<number>(0)
+  const [scroll, setScroll] = useState<number>(0)
+  
+  useEffect(() => {
+    setwidth(carousel.current.scrollWidth-carousel.current.offsetWidth + 20)
+  }, [])
 
-    // update state
-    setCards(prevState);
-  };
+  const toggleNext = () => {
+    if (carousel.current.scrollWidth != carousel.current.offsetWidth){
 
+      setScroll(x => x-100)
+      setItemsCount(itemsCount-1) 
+    }
+  }
+
+
+  const togglePrevious = () => {
+    if (carousel.current.scrollWidth < 1986){
+      setScroll(x => x+100)
+      setItemsCount(itemsCount-1) 
+    }
+  }
   return (
-    <>
-      <div
-        className="text-xl md:text-5xl cursor-pointer"
-        onClick={() => handleLeftClick()}
-      >
-        {"<"}
-      </div>
-      {cards
-        .filter((f) => f.active === true)
-        .sort((a, b) => (a.pos > b.pos ? 1 : b.pos > a.pos ? -1 : 0))
-        .map((card, index) => (
-          <Card key={index} prop={card.text} />
-        ))}
-      <div
-        className="text-xl md:text-5xl cursor-pointer"
-        onClick={() => handleRightClick()}
-      >
-        {">"}
-      </div>
-    </>
-  );
+  <div className='m-20 flex flex-row items-center'>
+      <button className='pointer-events-auto mr-2' onClick={()=>togglePrevious()}>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
+      </button>
+      < motion.div ref={carousel} className='carousel cursor-grab overflow-hidden '>
+        <motion.div drag="x" dragConstraints={{right:0,left:-width}} className='inner-carousel flex flex-row ' animate={{x:scroll}}>
+            {/* {lst.map((number) => {
+              return (
+                <Card num={number} key={number}/>
+              )
+            })}  */
+            props.children}
+        </motion.div>
+      </motion.div>
+      <button className=' ml-2 pointer-events-auto' onClick={()=>toggleNext()} >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
+      </button>
+    </div>
+  )
 }
 
 export default Carousel;
