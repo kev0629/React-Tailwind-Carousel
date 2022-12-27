@@ -1,5 +1,3 @@
-import {motion} from 'framer-motion'
-import {useRef, useEffect, useState} from 'react'
 import Card from './components/Card'
 import Carousel from './components/Carousel'
 
